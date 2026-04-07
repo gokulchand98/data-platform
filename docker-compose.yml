@@ -70,11 +70,7 @@ services:
   airflow-init:
     <<: *airflow-common
     container_name: platform_airflow_init
-    command: >
-      bash -c "airflow db migrate &&
-               airflow users create --username admin --password admin
-               --firstname Admin --lastname User --role Admin
-               --email admin@platform.com"
+    command: bash -c "airflow db migrate && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@platform.com"
     restart: "no"
 
   # ── BI layer ──────────────────────────────────────────────
