@@ -1,0 +1,40 @@
+version: 2
+
+models:
+
+  - name: dim_customers
+    description: "One row per customer with order behaviour metrics"
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+      - name: email
+        tests: [unique, not_null]
+      - name: customer_segment
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["high_value", "mid_value", "low_value", "no_orders"]
+
+  - name: dim_products
+    description: "One row per product with sales performance metrics"
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
+      - name: stock_status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["out_of_stock", "low_stock", "adequate"]
+
+  - name: fct_orders
+    description: "One row per order — central fact table"
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_id
+        tests: [not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["pending", "confirmed", "shipped", "delivered", "cancelled"]

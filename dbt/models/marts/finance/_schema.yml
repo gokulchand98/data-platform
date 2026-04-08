@@ -1,0 +1,19 @@
+version: 2
+
+models:
+
+  - name: finance_daily_revenue
+    description: "Daily revenue aggregated by date and currency"
+    columns:
+      - name: order_date
+        tests: [not_null]
+      - name: gross_revenue
+        tests: [not_null]
+
+  - name: finance_customer_ltv
+    description: "Customer lifetime value with revenue ranking"
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+      - name: lifetime_value
+        tests: [not_null]
