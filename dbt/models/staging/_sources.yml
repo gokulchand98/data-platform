@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: ecommerce
+    description: "Raw e-commerce transactional data from Postgres"
+    database: ecommerce
+    schema: public
+    freshness:
+      warn_after:  {count: 6,  period: hour}
+      error_after: {count: 24, period: hour}
+
+    tables:
+      - name: customers
+        description: "One row per registered customer"
+        loaded_at_field: updated_at
+
+      - name: orders
+        description: "One row per placed order"
+        loaded_at_field: updated_at
+
+      - name: products
+        description: "One row per product in the catalog"
+        loaded_at_field: updated_at
+
+      - name: order_items
+        description: "One row per line item within an order"

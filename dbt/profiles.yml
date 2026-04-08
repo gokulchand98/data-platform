@@ -3,7 +3,7 @@ data_platform:
   outputs:
     dev:
       type: postgres
-      host: localhost
+      host: 127.0.0.1
       port: 5432
       user: platform
       password: platform
