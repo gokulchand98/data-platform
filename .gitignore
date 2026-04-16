@@ -21,4 +21,6 @@ dbt/.user.yml
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.db.terraform/
+terraform.tfstate
+terraform.tfstate.backup
