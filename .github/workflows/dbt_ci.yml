@@ -16,7 +16,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DBT_PROFILES_DIR: ./dbt
   PYTHON_VERSION: "3.11"
   DBT_VERSION: "1.7.9"
   DBT_BIGQUERY_VERSION: "1.7.7"
@@ -51,10 +50,16 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: create dbt profiles.yml for CI
+      - name: create dbt profiles.yml
         run: |
-          cat > dbt/profiles.yml << 'PROFILES_EOF'
-          data_platform:
+          mkdir -p ~/.dbt
+          python3 << 'EOF'
+          import os, json
+
+          key_raw = os.environ['GCP_SA_KEY']
+          key_json = json.loads(key_raw)
+
+          profiles = f"""data_platform:
             target: ci
             outputs:
               ci:
@@ -63,20 +68,27 @@ jobs:
                 project: data-platform-portfolio
                 dataset: dbt_ci
                 location: US
-                keyfile_json: $GCP_SA_KEY_JSON
+                keyfile_json:
+                  type: {key_json['type']}
+                  project_id: {key_json['project_id']}
+                  private_key_id: {key_json['private_key_id']}
+                  private_key: '{key_json['private_key']}'
+                  client_email: {key_json['client_email']}
+                  client_id: {key_json['client_id']}
+                  auth_uri: {key_json['auth_uri']}
+                  token_uri: {key_json['token_uri']}
+                  auth_provider_x509_cert_url: {key_json['auth_provider_x509_cert_url']}
+                  client_x509_cert_url: {key_json['client_x509_cert_url']}
                 threads: 4
                 timeout_seconds: 300
                 priority: interactive
-          PROFILES_EOF
-          # inject the actual key JSON
-          python3 - << 'PYEOF'
-          import os, json
-          key = os.environ['GCP_SA_KEY']
-          with open('dbt/profiles.yml', 'r') as f:
-              content = f.read()
-          with open('dbt/profiles.yml', 'w') as f:
-              f.write(content.replace('$GCP_SA_KEY_JSON', key))
-          PYEOF
+          """
+
+          with open(os.path.expanduser('~/.dbt/profiles.yml'), 'w') as f:
+              f.write(profiles)
+
+          print("profiles.yml written successfully")
+          EOF
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
