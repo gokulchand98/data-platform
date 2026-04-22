@@ -27,10 +27,10 @@ cleaned as (
         updated_at,
 
         -- derived columns added at staging layer
-        date_trunc('day', ordered_at)             as order_date,
-        extract(year  from ordered_at)::int       as order_year,
-        extract(month from ordered_at)::int       as order_month,
-        extract(dow   from ordered_at)::int       as order_day_of_week
+        date_trunc(ordered_at, DAY)                   as order_date,
+        extract(year  from ordered_at)                as order_year,
+        extract(month from ordered_at)                as order_month,
+        extract(dayofweek from ordered_at)            as order_day_of_week
 
     from source
 

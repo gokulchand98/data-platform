@@ -12,7 +12,6 @@ models:
       - name: customer_segment
         tests:
           - accepted_values:
-              arguments:
                 values: ["high_value", "mid_value", "low_value", "no_orders"]
 
   - name: dim_products
@@ -23,7 +22,6 @@ models:
       - name: stock_status
         tests:
           - accepted_values:
-              arguments:
                 values: ["out_of_stock", "low_stock", "adequate"]
 
   - name: fct_orders
@@ -36,5 +34,4 @@ models:
       - name: status
         tests:
           - accepted_values:
-              arguments:
                 values: ["pending", "confirmed", "shipped", "delivered", "cancelled"]

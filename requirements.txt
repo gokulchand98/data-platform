@@ -1,0 +1,8 @@
+numpy==1.26.4
+pandas==2.2.2
+pyarrow==15.0.2
+dbt-core==1.7.9
+dbt-bigquery==1.7.7
+psycopg2-binary==2.9.9
+faker==24.0.0
+apache-airflow==2.8.1

@@ -13,7 +13,7 @@ provider "google" {
 }
 
 variable "project_id"  { default = "data-platform-portfolio" }
-variable "region"      { default = "us-central1" }
+variable "region"      { default = "US" }
 variable "environment" { default = "dev" }
 
 locals {

@@ -30,9 +30,9 @@ customer_orders as (
             then 1 else 0 end
         )                                           as total_cancelled_orders,
         round(
-            sum(case when status = 'cancelled' then 1 else 0 end)::numeric
+            CAST(sum(case when status = 'cancelled' then 1 else 0 end) AS NUMERIC)
             / nullif(count(*), 0) * 100, 2
-        )                                           as cancellation_rate_pct
+        )                                           as cancellation_rate_pct                                      
 
     from orders
     group by customer_id

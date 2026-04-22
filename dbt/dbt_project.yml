@@ -16,12 +16,12 @@ models:
   data_platform:
 
     staging:
-      +materialized: view        # staging models are views — no storage cost
-      +schema: staging
+      +materialized: view
+      +dataset: staging
 
     marts:
-      +materialized: table       # marts are tables — fast query performance
+      +materialized: table
       core:
-        +schema: core
+        +dataset: core
       finance:
-        +schema: finance
+        +dataset: finance

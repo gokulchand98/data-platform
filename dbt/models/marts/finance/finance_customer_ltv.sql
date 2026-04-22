@@ -28,10 +28,11 @@ final as (
         most_recent_order_at,
 
         -- days between first and most recent order
-        extract(
-            day from most_recent_order_at - first_order_at
-        )::int                                      as customer_lifespan_days,
-
+        CAST(
+            extract(
+                day from most_recent_order_at - first_order_at
+            ) AS INT64
+        )                                           as customer_lifespan_days,
         -- average revenue per order
         round(
             lifetime_value / nullif(total_orders, 0), 2

@@ -76,7 +76,7 @@ BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$oka LANGUAGE plpgsql;
 
 CREATE TRIGGER set_updated_at_customers
   BEFORE UPDATE ON customers
