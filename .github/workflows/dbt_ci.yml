@@ -1,0 +1,110 @@
+name: dbt CI pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dbt/**'
+      - '.github/workflows/dbt_ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dbt/**'
+
+# cancel in-progress runs when a new push arrives
+# prevents multiple runs queuing up on rapid commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DBT_PROFILES_DIR: ./dbt
+  PYTHON_VERSION: "3.11"
+  DBT_VERSION: "1.7.9"
+  DBT_BIGQUERY_VERSION: "1.7.7"
+
+jobs:
+  dbt-ci:
+    name: dbt run and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── 1. checkout ───────────────────────────────────────────
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. python setup ───────────────────────────────────────
+      - name: set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      # ── 3. install dependencies ───────────────────────────────
+      - name: install dbt and dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            "dbt-core==${{ env.DBT_VERSION }}" \
+            "dbt-bigquery==${{ env.DBT_BIGQUERY_VERSION }}" \
+            "protobuf==4.25.3" \
+            "numpy<2"
+
+      # ── 4. authenticate to GCP ────────────────────────────────
+      - name: authenticate to google cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # ── 5. write dbt profiles.yml ─────────────────────────────
+      # profiles.yml is gitignored — CI builds it from secrets
+      - name: create dbt profiles.yml for CI
+        run: |
+          mkdir -p dbt
+          cat > dbt/profiles.yml << EOF
+          data_platform:
+            target: ci
+            outputs:
+              ci:
+                type: bigquery
+                method: service-account-json
+                project: data-platform-portfolio
+                dataset: dbt_ci
+                location: US
+                keyfile_json: ${{ secrets.GCP_SA_KEY }}
+                threads: 4
+                timeout_seconds: 300
+                priority: interactive
+          EOF
+
+      # ── 6. validate dbt project ───────────────────────────────
+      - name: dbt debug
+        working-directory: ./dbt
+        run: dbt debug
+
+      # ── 7. run all models ─────────────────────────────────────
+      - name: dbt run
+        working-directory: ./dbt
+        run: dbt run --target ci
+
+      # ── 8. run all tests ──────────────────────────────────────
+      # this step failing blocks the PR from merging
+      - name: dbt test
+        working-directory: ./dbt
+        run: dbt test --target ci
+
+      # ── 9. generate docs ──────────────────────────────────────
+      - name: dbt docs generate
+        working-directory: ./dbt
+        run: dbt docs generate --target ci
+        if: github.ref == 'refs/heads/main'
+
+      # ── 10. upload docs as artifact ───────────────────────────
+      - name: upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-docs
+          path: dbt/target/
+          retention-days: 30
+        if: github.ref == 'refs/heads/main'
